@@ -1,0 +1,9 @@
+numpy
+matplotlib
+pandas
+seaborn
+scikit-learn
+flask
+urllib3
+whois
+
