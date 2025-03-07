@@ -5,9 +5,9 @@ import whois
 import datetime
 import pickle
 import numpy as np
-
+from flask_cors import CORS
 app = Flask(__name__)
-
+CORS(app)
 import os
 cwd = os.getcwd()
 cache = {}
