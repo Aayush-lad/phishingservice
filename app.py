@@ -124,18 +124,39 @@ def predict():
         return jsonify({'error': 'URL is required'}), 400
 
     ipqs = IPQS()
-    try:
-        result = ipqs.malicious_url_scanner_api(url, {'strictness': 3})
-        if result.get('success', False):
-            if result.get('phishing', False) or result.get('malware', False) or result.get('suspicious', False) or result.get('risk_score', 0) >= 70:
-                return jsonify({
-                    'url': url,
-                    'prediction': 'Phishing (detected by IPQS)',
-                    'ipqs_result': result
-                })
-    except Exception as e:
-        print("IPQS error:", str(e))  # Fail silently and move on
 
+    try:
+        # Call the IPQS malicious URL scanner API with strictness level 3
+        result = ipqs.malicious_url_scanner_api(url, {'strictness': 3})
+    
+        # Check if the API call was successful
+        if result.get('success', False):
+            # Extract relevant information from the result
+            phishing = result.get('phishing', False)
+            malware = result.get('malware', False)
+            suspicious = result.get('suspicious', False)
+            risk_score = result.get('risk_score', 0)
+    
+            # Check if the URL is considered phishing, malware, or suspicious
+            if phishing or malware or suspicious or risk_score >= 70:
+                message = f"URL: {url}\n"
+                message += "Prediction: Phishing (detected by IPQS)\n"
+                message += f"Malware: {malware}\n"
+                message += f"Phishing: {phishing}\n"
+                message += f"Suspicious: {suspicious}\n"
+                message += f"Risk Score: {risk_score}\n"
+                message += f"Domain: {result.get('domain')}\n"
+                message += f"Root Domain: {result.get('root_domain')}\n"
+                message += f"IP Address: {result.get('ip_address')}\n"
+                message += f"Status Code: {result.get('status_code')}\n"
+                message += f"Page Size: {result.get('page_size')}\n"
+                message += f"DNS Valid: {result.get('dns_valid')}\n"
+                message += f"Domain Age: {result.get('domain_age', {}).get('human', 'N/A')}\n"
+                message += f"Final URL: {result.get('final_url')}\n"
+                message += f"Scanned URL: {result.get('scanned_url')}\n"
+                return json({'url':url, 'prediction':message})
+    except Exception as err:
+        print(err)
     # Step 2: Check Google Safe Browsing
     google_api_key = os.getenv("GOOGLE_SAFE_BROWSING_KEY")
     if google_api_key:
@@ -146,7 +167,6 @@ def predict():
     # Step 3: Check ML model
     if url in cache:
         return jsonify({'url': url, 'prediction': cache[url]})
-
     try:
         features = extract_features(url)
         features = scaler.transform(features)
