@@ -177,5 +177,7 @@ def predict():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+
 if __name__ == '__main__':
-    app.run(debug=False)
+    port = int(os.environ.get('PORT', 5000))  # fallback for local dev
+    app.run(host='0.0.0.0', port=port)
