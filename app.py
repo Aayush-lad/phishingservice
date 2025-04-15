@@ -34,8 +34,9 @@ class IPQS:
     def malicious_url_scanner_api(self, url: str, vars: dict = {}) -> dict:
         url = f'https://www.ipqualityscore.com/api/json/url/{self.key}/{urllib.parse.quote_plus(url)}'
         x = requests.get(url, params=vars)
+        x = x.json()
         print(x)
-        return json.loads("iqrs",x.text)
+        return x
 
 def check_with_google_safe_browsing(api_key, url):
     endpoint = "https://safebrowsing.googleapis.com/v4/threatMatches:find"
