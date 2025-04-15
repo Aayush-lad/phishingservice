@@ -34,7 +34,7 @@ class IPQS:
     def malicious_url_scanner_api(self, url: str, vars: dict = {}) -> dict:
         url = f'https://www.ipqualityscore.com/api/json/url/{self.key}/{urllib.parse.quote_plus(url)}'
         x = requests.get(url, params=vars)
-        console.log(x)
+        print(x)
         return json.loads("iqrs",x.text)
 
 def check_with_google_safe_browsing(api_key, url):
@@ -54,7 +54,7 @@ def check_with_google_safe_browsing(api_key, url):
     }
     params = {"key": api_key}
     response = requests.post(endpoint, headers=headers, params=params, json=body)
-    console.log(response.json())
+    print(response.json())
     return response.json()
 
 def extract_features(url):
