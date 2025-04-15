@@ -139,21 +139,22 @@ def predict():
     
             # Check if the URL is considered phishing, malware, or suspicious
             if phishing or malware or suspicious or risk_score >= 70:
-                message = f"URL: {url}\n"
-                message += "Prediction: Phishing (detected by IPQS)\n"
-                message += f"Malware: {malware}\n"
-                message += f"Phishing: {phishing}\n"
-                message += f"Suspicious: {suspicious}\n"
-                message += f"Risk Score: {risk_score}\n"
-                message += f"Domain: {result.get('domain')}\n"
-                message += f"Root Domain: {result.get('root_domain')}\n"
-                message += f"IP Address: {result.get('ip_address')}\n"
-                message += f"Status Code: {result.get('status_code')}\n"
-                message += f"Page Size: {result.get('page_size')}\n"
-                message += f"DNS Valid: {result.get('dns_valid')}\n"
-                message += f"Domain Age: {result.get('domain_age', {}).get('human', 'N/A')}\n"
-                message += f"Final URL: {result.get('final_url')}\n"
-                message += f"Scanned URL: {result.get('scanned_url')}\n"
+                message = f"<strong>URL:</strong> {url}<br>"
+                message += "<strong>Prediction:</strong> Phishing (detected by IPQS)<br>"
+                message += f"<strong>Malware:</strong> {malware}<br>"
+                message += f"<strong>Phishing:</strong> {phishing}<br>"
+                message += f"<strong>Suspicious:</strong> {suspicious}<br>"
+                message += f"<strong>Risk Score:</strong> {risk_score}<br>"
+                message += f"<strong>Domain:</strong> {result.get('domain')}<br>"
+                message += f"<strong>Root Domain:</strong> {result.get('root_domain')}<br>"
+                message += f"<strong>IP Address:</strong> {result.get('ip_address')}<br>"
+                message += f"<strong>Status Code:</strong> {result.get('status_code')}<br>"
+                message += f"<strong>Page Size:</strong> {result.get('page_size')}<br>"
+                message += f"<strong>DNS Valid:</strong> {result.get('dns_valid')}<br>"
+                message += f"<strong>Domain Age:</strong> {result.get('domain_age', {}).get('human', 'N/A')}<br>"
+                message += f"<strong>Final URL:</strong> {result.get('final_url')}<br>"
+                message += f"<strong>Scanned URL:</strong> {result.get('scanned_url')}<br>"
+
                 return jsonify({'url':url, 'prediction':message})
     except Exception as err:
         print(err)
