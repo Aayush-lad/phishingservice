@@ -34,7 +34,8 @@ class IPQS:
     def malicious_url_scanner_api(self, url: str, vars: dict = {}) -> dict:
         url = f'https://www.ipqualityscore.com/api/json/url/{self.key}/{urllib.parse.quote_plus(url)}'
         x = requests.get(url, params=vars)
-        return json.loads(x.text)
+        console.log(x)
+        return json.loads("iqrs",x.text)
 
 def check_with_google_safe_browsing(api_key, url):
     endpoint = "https://safebrowsing.googleapis.com/v4/threatMatches:find"
@@ -53,6 +54,7 @@ def check_with_google_safe_browsing(api_key, url):
     }
     params = {"key": api_key}
     response = requests.post(endpoint, headers=headers, params=params, json=body)
+    console.log(response.json())
     return response.json()
 
 def extract_features(url):
@@ -104,7 +106,7 @@ def extract_features(url):
             created_date = created_date[0]
         domain_age = (datetime.datetime.now() - created_date).days // 365 if created_date else 0
     except Exception:
-        domain_age = 0
+        return jsonify({'url': url, 'prediction': 'Suspicious as we couldnot get whois results'})
 
     feature.append(domain_age)
     feature.append(-1)  # Placeholder for Google Index
