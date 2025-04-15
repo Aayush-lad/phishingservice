@@ -8,3 +8,4 @@ urllib3
 python-whois
 gunicorn
 flask-cors
+requests
