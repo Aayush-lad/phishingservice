@@ -30,10 +30,30 @@ cache = {}
 class IPQS:
     IPQS_API_KEY = os.getenv('IPQS_API_KEY')
     key = IPQS_API_KEY
+
     def malicious_url_scanner_api(self, url: str, vars: dict = {}) -> dict:
         url = f'https://www.ipqualityscore.com/api/json/url/{self.key}/{urllib.parse.quote_plus(url)}'
         x = requests.get(url, params=vars)
         return json.loads(x.text)
+
+def check_with_google_safe_browsing(api_key, url):
+    endpoint = "https://safebrowsing.googleapis.com/v4/threatMatches:find"
+    headers = {"Content-Type": "application/json"}
+    body = {
+        "client": {
+            "clientId": "yourcompanyname",
+            "clientVersion": "1.5.2"
+        },
+        "threatInfo": {
+            "threatTypes": ["MALWARE", "SOCIAL_ENGINEERING", "UNWANTED_SOFTWARE", "POTENTIALLY_HARMFUL_APPLICATION"],
+            "platformTypes": ["ANY_PLATFORM"],
+            "threatEntryTypes": ["URL"],
+            "threatEntries": [{"url": url}]
+        }
+    }
+    params = {"key": api_key}
+    response = requests.post(endpoint, headers=headers, params=params, json=body)
+    return response.json()
 
 def extract_features(url):
     feature = []
@@ -77,7 +97,6 @@ def extract_features(url):
     feature.append(1 if '<title></title>' in url else 0)
     feature.append(1 if hostname in url else 0)
 
-    # Whois domain age
     try:
         whois_info = whois.whois(hostname)
         created_date = whois_info.creation_date
@@ -101,16 +120,27 @@ def predict():
     if not url:
         return jsonify({'error': 'URL is required'}), 400
 
-    # First, check if the URL is flagged as phishing by IPQS
     ipqs = IPQS()
-    additional_params = {'strictness': 0}
-    result = ipqs.malicious_url_scanner_api(url, additional_params)
+    try:
+        result = ipqs.malicious_url_scanner_api(url, {'strictness': 3})
+        if result.get('success', False):
+            if result.get('phishing', False) or result.get('malware', False) or result.get('suspicious', False) or result.get('risk_score', 0) >= 70:
+                return jsonify({
+                    'url': url,
+                    'prediction': 'Phishing (detected by IPQS)',
+                    'ipqs_result': result
+                })
+    except Exception as e:
+        print("IPQS error:", str(e))  # Fail silently and move on
 
-    if result.get('success', False):
-        if result.get('phishing', False) or result.get('malware', False) or result.get('risk_score', 0) > 85:
-            return jsonify({'url': url, 'prediction': 'Phishing based on IPQS check'})
+    # Step 2: Check Google Safe Browsing
+    google_api_key = os.getenv("GOOGLE_SAFE_BROWSING_KEY")
+    if google_api_key:
+        safe_browsing_result = check_with_google_safe_browsing(google_api_key, url)
+        if safe_browsing_result.get("matches"):
+            return jsonify({'url': url, 'prediction': 'Phishing based on Google Safe Browsing'})
 
-    # If not phishing, continue with the ML model prediction
+    # Step 3: Check ML model
     if url in cache:
         return jsonify({'url': url, 'prediction': cache[url]})
 
@@ -120,7 +150,6 @@ def predict():
         prediction = model.predict(features)
         result = "Phishing" if prediction[0] == 1 else "Legitimate"
         cache[url] = result
-
         return jsonify({'url': url, 'prediction': result})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
