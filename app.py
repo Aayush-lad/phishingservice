@@ -28,8 +28,8 @@ with open(scaler_path, 'rb') as sfile:
 cache = {}
 
 class IPQS:
-    key = 'YOUR_API_KEY_HERE'  # Replace with your actual IPQS API key
-
+    IPQS_API_KEY = os.getenv('IPQS_API_KEY')
+    key = IPQS_API_KEY
     def malicious_url_scanner_api(self, url: str, vars: dict = {}) -> dict:
         url = f'https://www.ipqualityscore.com/api/json/url/{self.key}/{urllib.parse.quote_plus(url)}'
         x = requests.get(url, params=vars)
