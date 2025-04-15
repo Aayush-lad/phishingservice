@@ -154,7 +154,7 @@ def predict():
                 message += f"Domain Age: {result.get('domain_age', {}).get('human', 'N/A')}\n"
                 message += f"Final URL: {result.get('final_url')}\n"
                 message += f"Scanned URL: {result.get('scanned_url')}\n"
-                return json({'url':url, 'prediction':message})
+                return jsonify({'url':url, 'prediction':message})
     except Exception as err:
         print(err)
     # Step 2: Check Google Safe Browsing
